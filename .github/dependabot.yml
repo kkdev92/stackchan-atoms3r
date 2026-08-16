@@ -1,0 +1,12 @@
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+
+# Firmware and managed-component versions are pinned in platformio.ini,
+# idf_component.yml, and dependencies.lock. Review those updates manually and
+# verify hardware-dependent behavior on a board.

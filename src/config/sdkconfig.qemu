@@ -1,0 +1,18 @@
+# What has to differ under the emulator. Never used on real hardware.
+#
+# Move the console back to UART0 from the USB Serial/JTAG controller.
+#
+# The emulator does not implement USB. sdkconfig.base selects the USB console
+# because that is what the real board has, and the second-stage bootloader
+# then hands UART0 away on purpose before switching to a device that is not
+# there. The result is that the ROM bootloader's output appears and then
+# everything goes silent — which reads exactly like a crash on the first line
+# of application code, and is not one. That symptom cost a long time to
+# understand once; this line is what prevents it.
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+
+# Core dumps normally go to flash. Under the emulator there is no way to read
+# them back out, so print the panic to the console instead, where it can
+# actually be seen.
+CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=n
+CONFIG_ESP_COREDUMP_ENABLE_TO_NONE=y

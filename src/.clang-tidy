@@ -1,0 +1,52 @@
+# The set of checks clang-tidy runs.
+#
+# Checks are named explicitly so diagnostics stay limited to rules relevant to
+# this project.
+#
+# tools/run-clang-tidy.py points at this file. It is the only thing that runs
+# clang-tidy here; `pio check` covers cppcheck alone, for reasons that script
+# explains.
+#
+# The selected groups focus on correctness, portability, and maintainability.
+Checks: >
+  -*,
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -misc-include-cleaner,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -misc-non-private-member-variables-in-classes,
+  -bugprone-easily-swappable-parameters
+
+# Why each of the above is off.
+#
+# cppcoreguidelines-pro-bounds-*
+#   The bounds-safety profile of the C++ Core Guidelines. Satisfying it takes
+#   gsl::span and gsl::at. GSL is not part of ESP-IDF and is not being added.
+#   Fixed-size buffer indexing triggers these checks throughout the core.
+#   Bounds are covered instead by focused overrun tests
+#   (test_overflow_never_writes_past_the_buffer, in test_native_json_writer).
+#
+# misc-non-private-member-variables-in-classes
+#   CommandSpec and ParamSpec are intentional public data holders without
+#   class invariants.
+#
+# bugprone-easily-swappable-parameters
+#   Some APIs intentionally accept adjacent values of one type, such as
+#   member(key, value).
+
+WarningsAsErrors: ''
+HeaderFilterRegex: 'stackchan/.*'
+FormatStyle: file
