@@ -160,5 +160,29 @@ Please keep a pull request focused and include:
 Do not include API tokens, Wi-Fi credentials, setup passphrases, private
 addresses, or unredacted core dumps in an issue or pull request.
 
+## Releases
+
+`PROJECT_VER` in the top-level `CMakeLists.txt` is the only authority on the
+version. ESP-IDF puts it in the application descriptor and `device.describe`
+reads it back, so it is what a running device answers. The README status line,
+the newest `CHANGELOG.md` heading, the `device.describe` example in the API
+document, and the release tag are all copies of it, and
+`tools/check-invariants.py` fails when a copy disagrees.
+
+Because this repository distributes source rather than firmware images, the tag
+is what someone checks out to get a version. So derive it rather than typing it:
+
+```bash
+# From a checkout of the commit being released.
+version=$(sed -n 's/^set(PROJECT_VER "\(.*\)")$/\1/p' CMakeLists.txt)
+git tag -a "v${version}" -m "v${version}"
+git push origin "v${version}"
+```
+
+CI runs on `v*` tags and checks the tag against `PROJECT_VER`, so a tag cut at
+the wrong commit, or one cut before `PROJECT_VER` was raised, fails there rather
+than reaching anyone. Release notes come from the matching `CHANGELOG.md`
+section.
+
 By contributing, you agree that your contribution is licensed under this
 repository's [MIT License](LICENSE).
