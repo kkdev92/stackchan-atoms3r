@@ -1,0 +1,5 @@
+{
+  "name": "stackchan_runtime",
+  "description": "Concurrency primitives. No OS dependency, host-testable.",
+  "build": { "flags": ["-std=gnu++17"] }
+}

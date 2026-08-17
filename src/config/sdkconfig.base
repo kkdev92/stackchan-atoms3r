@@ -1,0 +1,30 @@
+# AtomS3R: ESP32-S3-PICO-1-N8R8, 8MB Octal PSRAM
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM_USE_MALLOC=y
+
+# Run the CPU at its rated 240 MHz.
+#
+# This setting supports compute-bound parsing and rendering. Display and I2S
+# clocks are configured independently. The trade-off is increased power use
+# and heat; the documented assembly is powered over USB.
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+
+# 8 MB of flash. Left unset, ESP-IDF assumes 2 MB, and the storage and core
+# dump partitions that partitions/dev.csv places near the top of flash end up
+# outside it. The board definition says 8 MB too; these must agree.
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+
+# Use the built-in USB Serial/JTAG controller for the primary console.
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+
+# Diagnostics suitable for development and field troubleshooting.
+CONFIG_FREERTOS_CHECK_STACKOVERFLOW_CANARY=y
+CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y
+CONFIG_ESP_COREDUMP_CHECK_BOOT=y
+CONFIG_ESP_SYSTEM_PANIC_PRINT_REBOOT=y
+
+# Reduce accidental differences between builds from the same source/configuration.
+CONFIG_APP_REPRODUCIBLE_BUILD=y

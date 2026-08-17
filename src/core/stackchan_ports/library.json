@@ -1,0 +1,13 @@
+{
+  "name": "stackchan_ports",
+  "description": "Abstract boundaries to the outside world. Headers only.",
+  "dependencies": {
+    "stackchan_domain": "*",
+    "stackchan_runtime": "*"
+  },
+  "build": {
+    "flags": [
+      "-std=gnu++17"
+    ]
+  }
+}

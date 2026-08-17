@@ -1,0 +1,12 @@
+# Line endings are LF everywhere, matching .editorconfig. Without this, a
+# checkout on Windows produces CRLF and then contradicts the end_of_line = lf
+# that every editor in the project is being told to follow.
+* text=auto eol=lf
+
+# Binary, so git neither converts nor tries to merge them.
+*.bin  binary
+*.elf  binary
+*.map  binary
+*.png  binary
+*.stl  binary
+*.zip  binary

@@ -1,0 +1,5 @@
+{
+  "name": "stackchan_domain",
+  "description": "Device rules and state. No dependencies, host-testable.",
+  "build": { "flags": ["-std=gnu++17"] }
+}
