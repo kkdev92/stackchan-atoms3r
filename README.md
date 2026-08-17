@@ -14,7 +14,7 @@ The firmware sends audio only when a conversation is started and contains no
 telemetry service.
 *Built as a compact, inspectable base for one documented hardware setup.*
 
-> **Status:** 0.1.0 pre-release (best-effort maintenance)
+> **Status:** 0.1.0 release (best-effort maintenance)
 
 ---
 
@@ -271,7 +271,7 @@ or other secrets in the URL because it is stored and written to device logs.
 - **Physical verification required.** Hardware-dependent behavior still needs a real device
 - **Dependency warning.** The pinned display component emits legacy-I2C and LEDC deprecation warnings with ESP-IDF 6.0.1
 - **No additional device features.** Servo, infrared, OTA update handling, wake-word detection, and voice activity detection are not implemented
-- **Pre-release coverage.** This version has not been soak-tested across multiple boards and networks
+- **Coverage.** This version has not been soak-tested across multiple boards and networks
 
 ---
 
