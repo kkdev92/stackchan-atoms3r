@@ -10,3 +10,14 @@ updates:
 # Firmware and managed-component versions are pinned in platformio.ini,
 # idf_component.yml, and dependencies.lock. Review those updates manually and
 # verify hardware-dependent behavior on a board.
+#
+# CI's Python tools are pinned in tools/requirements-ci.txt and are deliberately
+# not listed above either. Dependabot would treat that file and its .in as a
+# pip-compile pair and regenerate the lock in its own environment, but the lock
+# only installs if it is resolved for the runners specifically
+# (--python-version 3.12 --python-platform linux); resolved anywhere else it
+# drops typing-extensions and --require-hashes then refuses the whole install.
+# Bump the version in tools/requirements-ci.in and regenerate with the command
+# in its header.
+#
+# Security alerts are unaffected by this file and still cover those packages.
