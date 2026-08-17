@@ -1,18 +1,22 @@
 # Changelog
 
-Notable user-visible changes, following
+Notable user-visible changes, in the spirit of
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Interfaces may change
-before 1.0.0, and a breaking change will be called out here.
+before 1.0.0, and a breaking change will be called out here. The version below is
+the one the firmware reports.
 
-A release here tags source, and nothing else: no binary is built or published,
-because a firmware image would combine this project's code with third-party
-components and carry its own verification and attribution obligations. Build it
-yourself from the tag.
+**There are no release tags, and no binary is published.** A firmware image would
+combine this project's code with third-party components and carry its own
+verification and attribution obligations, so it is built from source instead —
+which leaves a tag with no artifact to name. The history of individual changes is
+the pull requests, and a device identifies its own build: `device.describe`
+returns the version and the ELF SHA-256 it booted, which is stable for the same
+source because the build embeds no timestamp.
 
-## [0.1.0] - 2026-08-17
+## 0.1.0
 
-First public release, so everything is new — there is no earlier public version
-for anything to have changed from or been fixed against.
+The first public version, so everything is new — there is no earlier one for
+anything to have changed from or been fixed against.
 
 ### Added
 
@@ -41,8 +45,8 @@ for anything to have changed from or been fixed against.
 
 - Recording is a fixed three seconds — no voice activity detection, no wake word
 - Plain HTTP on the local network; the token travels in a header
-- Hardware verification for this release was limited to a short run on one
-  board, one network, and the safe configuration. The end-to-end conversation
-  path was not verified for this commit
-- No servo, no infrared, and no over-the-air update, though the release
-  partition layout leaves room for one
+- Hardware verification was limited to a short run on one board, one network, and
+  the safe configuration. The end-to-end conversation path was not verified on
+  this tree
+- No servo, no infrared, and no over-the-air update, though the
+  `atoms3r-release` partition layout leaves room for one

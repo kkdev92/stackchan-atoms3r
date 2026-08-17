@@ -2,10 +2,10 @@
 
 ## Supported versions
 
-Only `main` is supported. Security fixes are made there, and a release tag is a
-marker on a commit rather than a branch that receives them — so a fix reaches a
-tagged version only when a later tag is cut. Older tags and locally built images
-are not maintained as separate supported versions.
+Only `main` is supported, and there is nothing else that could be: no release is
+tagged and no binary is published, so a fix means rebuilding from a later commit.
+Older commits and locally built images are not maintained as separate supported
+versions.
 
 ## Reporting a vulnerability
 

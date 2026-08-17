@@ -14,7 +14,7 @@ The firmware sends audio only when a conversation is started and contains no
 telemetry service.
 *Built as a compact, inspectable base for one documented hardware setup.*
 
-> **Status:** 0.1.0 release (best-effort maintenance)
+> **Status:** 0.1.0 (best-effort maintenance)
 
 ---
 
@@ -381,7 +381,15 @@ on Linux or `.\tools\run-qemu.ps1 -Install` on Windows.
 
 ## Changelog
 
-Release notes are in [CHANGELOG.md](CHANGELOG.md).
+Notable changes are in [CHANGELOG.md](CHANGELOG.md), and the history of
+individual changes is the pull requests.
+
+There are no release tags. Nothing is distributed from here, so a tag would name
+no artifact — and to identify what is actually running, ask the device instead of
+consulting a tag: `device.describe` returns the firmware version and the ELF
+SHA-256 of the build it booted. Builds are reproducible, with no timestamp
+embedded, so that SHA is stable for the same source and different for source that
+was modified locally. A tag could not tell you the second part.
 
 ---
 
