@@ -231,9 +231,9 @@ constexpr std::size_t kMaxCheckedJsonDepth = 16;
 // told about everywhere else. What makes it safe *here* is the bound: every
 // descent goes through skip_checked_value, which refuses at
 // kMaxCheckedJsonDepth, so the stack cost has a ceiling that does not depend on
-// the input. test_native_json_scan exercises that ceiling from both sides -- the
-// deepest accepted nesting and the first rejected one -- so the claim in this
-// comment fails a test if it stops being true.
+// the input. test_nesting_is_bounded_and_the_boundary_is_where_it_should_be, in
+// test_native_json_scan, holds that ceiling from both sides, so the claim in
+// this comment fails a test if it stops being true.
 [[nodiscard]] bool skip_checked_value(std::string_view s, std::size_t& i,
                                       std::string_view& out_span,
                                       ValueKind& out_kind,

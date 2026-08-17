@@ -258,7 +258,7 @@ void test_unescape_rejects_insufficient_capacity() {
 
 // A document whose "a" member is `levels` objects deep, with an integer at the
 // bottom so every level is itself well formed.
-std::string nested_document(int levels) {
+std::string document_with_nesting(int levels) {
   std::string s = R"({"a":)";
   for (int i = 0; i < levels; ++i) {
     s += R"({"b":)";
@@ -273,25 +273,27 @@ std::string nested_document(int levels) {
 
 // The scanner is recursive, so its stack cost is set by how deeply nested the
 // input is -- and the input arrives from the network. The depth limit is what
-// keeps that cost bounded, and this is the test the suppression of
-// misc-no-recursion in json_scan.cpp points at: if the limit stops working, this
-// fails here rather than the device overflowing its stack in the field.
+// keeps that cost bounded, and this is the test that the suppression of
+// misc-no-recursion in json_scan.cpp names, so that the suppression points at
+// something specific rather than at a suite.
 //
-// The rejection side was already covered, by the 17-deep array in
-// test_checked_object_member_validates_the_complete_document. What is here is
-// the *accepted* side, which is the half that catches the limit being tightened
-// by accident: a guard that refuses everything also passes a test that only
-// checks that deep input is refused.
+// Both sides of the boundary were already covered incidentally by
+// test_checked_object_member_validates_the_complete_document -- a 17-deep array
+// is rejected there, and a 16-deep document validates. Checked by moving the
+// limit: tightening it to 15 fails that test, and removing it fails it too. So
+// what this adds is narrower than it looks: the boundary as its own subject, the
+// object path rather than the array path at the first rejected depth, and a
+// depth far past the limit.
 void test_nesting_is_bounded_and_the_boundary_is_where_it_should_be() {
   std::string_view out;
 
-  const std::string at_the_limit = nested_document(16);
+  const std::string at_the_limit = document_with_nesting(16);
   TEST_ASSERT_EQUAL_INT(
       static_cast<int>(JsonMemberResult::found),
       static_cast<int>(json_find_object_checked(at_the_limit, "a", out)));
 
   // One past, through the object path rather than the array path.
-  const std::string one_past = nested_document(17);
+  const std::string one_past = document_with_nesting(17);
   TEST_ASSERT_EQUAL_INT(
       static_cast<int>(JsonMemberResult::invalid),
       static_cast<int>(json_find_object_checked(one_past, "a", out)));
@@ -300,7 +302,7 @@ void test_nesting_is_bounded_and_the_boundary_is_where_it_should_be() {
   // one level over. Rejection has to read as invalid: a caller told `missing`
   // would treat a document it could not validate as one that merely lacked the
   // member.
-  const std::string far_past = nested_document(400);
+  const std::string far_past = document_with_nesting(400);
   TEST_ASSERT_EQUAL_INT(
       static_cast<int>(JsonMemberResult::invalid),
       static_cast<int>(json_find_object_checked(far_past, "a", out)));
