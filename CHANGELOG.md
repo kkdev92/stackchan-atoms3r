@@ -1,11 +1,15 @@
 # Changelog
 
 Notable user-visible changes, following
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The project is
-pre-release: interfaces may change before 1.0.0, and a breaking change will be
-called out here. The firmware reports `0.1.0`; nothing has been tagged yet.
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Interfaces may change
+before 1.0.0, and a breaking change will be called out here.
 
-## [Unreleased]
+A release here tags source, and nothing else: no binary is built or published,
+because a firmware image would combine this project's code with third-party
+components and carry its own verification and attribution obligations. Build it
+yourself from the tag.
+
+## [0.1.0] - 2026-08-17
 
 First public release, so everything is new — there is no earlier public version
 for anything to have changed from or been fixed against.

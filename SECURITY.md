@@ -2,9 +2,10 @@
 
 ## Supported versions
 
-stackchan-atoms3r is currently a pre-release project. Security fixes are made
-on the current development branch. Older commits and unpublished builds are
-not maintained as separate supported versions.
+Only `main` is supported. Security fixes are made there, and a release tag is a
+marker on a commit rather than a branch that receives them — so a fix reaches a
+tagged version only when a later tag is cut. Older tags and locally built images
+are not maintained as separate supported versions.
 
 ## Reporting a vulnerability
 
