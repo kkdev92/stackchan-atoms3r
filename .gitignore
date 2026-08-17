@@ -37,8 +37,11 @@ compile_commands.json
 /.claude/
 /.mcp.json
 
-# Where Playwright drops traces, videos and screenshots from local runs.
+# Where Playwright drops traces, videos, screenshots and browser profiles from
+# local runs. .playwright-cli/ is the working directory of the playwright-cli
+# tool and holds page snapshots and a persistent browser profile.
 /.playwright/
+/.playwright-cli/
 
 # Common local secrets and logs. Review staged changes before committing, and
 # redact credentials and setup details before sharing device logs.

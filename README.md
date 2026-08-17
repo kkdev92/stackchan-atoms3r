@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/kkdev92/stackchan-atoms3r/actions/workflows/ci.yml/badge.svg)](https://github.com/kkdev92/stackchan-atoms3r/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/kkdev92/stackchan-atoms3r/badge)](https://scorecard.dev/viewer/?uri=github.com/kkdev92/stackchan-atoms3r)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14114/badge)](https://www.bestpractices.dev/projects/14114)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/17)
 [![ESP-IDF](https://img.shields.io/badge/ESP--IDF-6.0.1-red.svg)](platformio.ini)
@@ -322,6 +323,8 @@ the full operational guidance, see [SECURITY.md](SECURITY.md).
 | Environment | Purpose |
 | --- | --- |
 | `native` | Host tests and cppcheck for `src/core` |
+| `native-sanitize` | The host tests under AddressSanitizer and UndefinedBehaviorSanitizer |
+| `native-coverage` | The host tests instrumented, for the coverage measurement below |
 | `atoms3r-safe` | First flash and hardware bring-up |
 | `atoms3r-debug` | Hardware development with debug logging |
 | `atoms3r-qemu` | QEMU boot check with Wi-Fi disabled |
@@ -334,13 +337,21 @@ python tools/check-invariants.py
 pio test -e native
 pio check -e native
 python tools/run-clang-tidy.py
+python tools/check-coverage.py   # needs gcovr
+pio test -e native-sanitize      # Linux; MinGW ships no libasan
 tools/run-qemu.sh --check
 ```
 
-`clang-tidy` is installed separately. On Windows, `./tools/check.ps1` runs the
-repository checks using the tools available on that machine, and reports a check
-as skipped rather than passed when its tool is missing. The same checks run in CI
-on every push and pull request to `main`.
+`clang-tidy` and `gcovr` are installed separately. On Windows, `./tools/check.ps1`
+runs the repository checks using the tools available on that machine, and reports
+a check as skipped rather than passed when its tool is missing. The same checks
+run in CI on every push and pull request to `main`.
+
+Because `src/core` contains no ESP-IDF, the entire decision layer runs on a PC,
+and its test coverage is measured rather than assumed: 93.2% of lines, 82.6% of
+branches, and 99.7% of functions. CI enforces a floor of 90% line and 80% branch
+coverage, and runs the same tests under AddressSanitizer and
+UndefinedBehaviorSanitizer on every pull request.
 
 Before the first QEMU run, install it with `tools/run-qemu.sh --install-only`
 on Linux or `.\tools\run-qemu.ps1 -Install` on Windows.
