@@ -52,6 +52,24 @@ pio check -e native
 python tools/run-clang-tidy.py
 ```
 
+Two further host lanes run in CI on every pull request, and are worth running
+locally when a change touches parsing, buffers, or lifetimes:
+
+```bash
+# Coverage of src/core, with a floor that fails the build if it drops.
+pip install gcovr
+python tools/check-coverage.py
+
+# The same tests under AddressSanitizer and UndefinedBehaviorSanitizer.
+# Linux only: the MinGW toolchains commonly used on Windows ship no libasan,
+# so on Windows this one is left to CI.
+pio test -e native-sanitize
+```
+
+`check-coverage.py` runs the suites one at a time, because PlatformIO rebuilds
+into a shared directory and each suite would otherwise erase the last one's
+coverage data. It takes a few minutes.
+
 For firmware, configuration, or platform changes, also build the affected
 environment. Before release, build all four firmware environments:
 
