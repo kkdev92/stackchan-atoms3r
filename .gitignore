@@ -31,6 +31,15 @@ compile_commands.json
 .vscode/tasks.json
 .vscode/settings.json
 
+# Local Claude Code setup. The skills and MCP server definitions here are
+# per-machine tooling rather than part of the firmware, and .mcp.json can carry
+# local paths and credentials.
+/.claude/
+/.mcp.json
+
+# Where Playwright drops traces, videos and screenshots from local runs.
+/.playwright/
+
 # Common local secrets and logs. Review staged changes before committing, and
 # redact credentials and setup details before sharing device logs.
 secrets.local.*
