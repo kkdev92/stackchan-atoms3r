@@ -1,0 +1,17 @@
+# The Python tools CI installs, and the only place their versions are chosen.
+#
+# tools/requirements-ci.txt is generated from this file and pins the whole
+# transitive closure by hash, so a compromised or re-uploaded package on PyPI
+# fails the install instead of running. Regenerate after editing this file:
+#
+#   uv pip compile --generate-hashes --python-version 3.12 --python-platform linux \
+#     --output-file tools/requirements-ci.txt tools/requirements-ci.in
+#
+# Resolve for the runner, not for the machine you are sitting at. Dependencies
+# are conditional on both, and a missing one fails the whole lane under
+# --require-hashes. Resolving this on Windows with Python 3.13 omits
+# typing-extensions, which anyio needs on 3.12 and CI would then refuse to
+# install. Those two flags are the difference; they are not decoration.
+
+platformio==6.1.19
+gcovr==8.6

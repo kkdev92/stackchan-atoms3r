@@ -70,6 +70,11 @@ pio test -e native-sanitize
 into a shared directory and each suite would otherwise erase the last one's
 coverage data. It takes a few minutes.
 
+CI installs its Python tools from `tools/requirements-ci.txt`, which pins every
+package and its dependencies by hash. If you change a version, edit
+`tools/requirements-ci.in` and regenerate the lock with the command in its
+header; the versions are chosen there and nowhere else.
+
 For firmware, configuration, or platform changes, also build the affected
 environment. Before release, build all four firmware environments:
 
