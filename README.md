@@ -1,7 +1,12 @@
 # stackchan-atoms3r
 
+[![CI](https://github.com/kkdev92/stackchan-atoms3r/actions/workflows/ci.yml/badge.svg)](https://github.com/kkdev92/stackchan-atoms3r/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/kkdev92/stackchan-atoms3r/badge)](https://scorecard.dev/viewer/?uri=github.com/kkdev92/stackchan-atoms3r)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/17)
+[![ESP-IDF](https://img.shields.io/badge/ESP--IDF-6.0.1-red.svg)](platformio.ini)
+[![PlatformIO](https://img.shields.io/badge/PlatformIO-6.1.19-orange.svg)](platformio.ini)
+[![Board](https://img.shields.io/badge/board-M5Stack%20AtomS3R-blue.svg)](docs/hardware/pins-and-peripherals.md)
 
 Bring a small Stack-chan to life with an animated face, button-controlled
 conversations, and a local HTTP API.
