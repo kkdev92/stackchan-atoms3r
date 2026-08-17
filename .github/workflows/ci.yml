@@ -18,10 +18,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  PLATFORMIO_VERSION: "6.1.19"
-  GCOVR_VERSION: "8.6"
-
 jobs:
   invariants:
     name: invariants
@@ -65,10 +61,10 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.platformio
-          key: pio-host-${{ runner.os }}-${{ env.PLATFORMIO_VERSION }}-${{ hashFiles('platformio.ini') }}
+          key: pio-host-${{ runner.os }}-${{ hashFiles('tools/requirements-ci.txt', 'platformio.ini') }}
 
-      - name: Install PlatformIO Core
-        run: pip install "platformio==${PLATFORMIO_VERSION}"
+      - name: Install the pinned Python tools
+        run: pip install --require-hashes -r tools/requirements-ci.txt
 
       # Host tests build only src/core (invariant 1).
       - name: Run the host tests
@@ -90,10 +86,10 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.platformio
-          key: pio-host-${{ runner.os }}-${{ env.PLATFORMIO_VERSION }}-${{ hashFiles('platformio.ini') }}
+          key: pio-host-${{ runner.os }}-${{ hashFiles('tools/requirements-ci.txt', 'platformio.ini') }}
 
-      - name: Install PlatformIO Core
-        run: pip install "platformio==${PLATFORMIO_VERSION}"
+      - name: Install the pinned Python tools
+        run: pip install --require-hashes -r tools/requirements-ci.txt
 
       # -fno-sanitize-recover is set in platformio.ini, so a finding aborts the
       # run and fails the lane rather than printing and carrying on.
@@ -114,10 +110,10 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.platformio
-          key: pio-host-${{ runner.os }}-${{ env.PLATFORMIO_VERSION }}-${{ hashFiles('platformio.ini') }}
+          key: pio-host-${{ runner.os }}-${{ hashFiles('tools/requirements-ci.txt', 'platformio.ini') }}
 
-      - name: Install PlatformIO Core and gcovr
-        run: pip install "platformio==${PLATFORMIO_VERSION}" "gcovr==${GCOVR_VERSION}"
+      - name: Install the pinned Python tools
+        run: pip install --require-hashes -r tools/requirements-ci.txt
 
       # pipefail because a pipe otherwise reports tee's exit code, which is
       # always 0, and the floor check would pass while failing.
@@ -141,10 +137,10 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.platformio
-          key: pio-host-${{ runner.os }}-${{ env.PLATFORMIO_VERSION }}-${{ hashFiles('platformio.ini') }}
+          key: pio-host-${{ runner.os }}-${{ hashFiles('tools/requirements-ci.txt', 'platformio.ini') }}
 
-      - name: Install PlatformIO Core
-        run: pip install "platformio==${PLATFORMIO_VERSION}"
+      - name: Install the pinned Python tools
+        run: pip install --require-hashes -r tools/requirements-ci.txt
 
       - name: Install clang-tidy
         run: sudo apt-get install -y -qq clang-tidy-18
@@ -188,10 +184,10 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.platformio
-          key: pio-firmware-${{ runner.os }}-${{ env.PLATFORMIO_VERSION }}-${{ steps.toolchain.outputs.key }}
+          key: pio-firmware-${{ runner.os }}-${{ hashFiles('tools/requirements-ci.txt') }}-${{ steps.toolchain.outputs.key }}
 
-      - name: Install PlatformIO Core
-        run: pip install "platformio==${PLATFORMIO_VERSION}"
+      - name: Install the pinned Python tools
+        run: pip install --require-hashes -r tools/requirements-ci.txt
 
       # pipefail so a failed build fails here, with the compiler's message,
       # rather than further down where the footprint step finds no RAM line.
@@ -241,7 +237,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.platformio
-          key: pio-firmware-${{ runner.os }}-${{ env.PLATFORMIO_VERSION }}-${{ steps.toolchain.outputs.key }}
+          key: pio-firmware-${{ runner.os }}-${{ hashFiles('tools/requirements-ci.txt') }}-${{ steps.toolchain.outputs.key }}
 
       - name: Cache QEMU
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -249,8 +245,8 @@ jobs:
           path: ~/qemu-esp
           key: qemu-${{ runner.os }}-${{ hashFiles('tools/run-qemu.sh') }}
 
-      - name: Install PlatformIO Core
-        run: pip install "platformio==${PLATFORMIO_VERSION}"
+      - name: Install the pinned Python tools
+        run: pip install --require-hashes -r tools/requirements-ci.txt
 
       - name: Install QEMU
         run: bash tools/run-qemu.sh --install-only
