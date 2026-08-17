@@ -25,11 +25,17 @@ version the firmware does not report -- it just sends someone hunting for a
 difference between their device and the documentation that is not there. So it
 is checked here, against PROJECT_VER, which is the copy device.describe reads.
 
+A release tag is the same kind of copy, and the one people start from, because
+this repository distributes source rather than firmware images. Pass --tag to
+check it. CI does that on a tag push, which is the only moment the tag exists
+to be checked.
+
 Run it directly, or as part of tools/check.ps1 or CI.
 
 Exit code 0 if everything holds, 1 otherwise.
 """
 
+import argparse
 import os
 import re
 import sys
@@ -174,14 +180,12 @@ def check_dependencies_point_downward():
                  "allowed to require" % name)
 
 
-def check_the_version_agrees():
-    """The version a reader is told must be the one the device reports.
+def project_ver():
+    """The version the device reports, or None if nothing pins it.
 
     PROJECT_VER is the only authority: ESP-IDF puts it in the application
     descriptor, and device.describe reads it back from there. Everywhere else
-    the version appears, it is a copy, and a copy that disagrees sends someone
-    looking for a difference between their device and the documentation that is
-    not there.
+    the version appears -- a document, a release tag -- it is a copy.
     """
     cmakelists = os.path.join(ROOT, "CMakeLists.txt")
     with open(cmakelists, encoding="utf-8") as handle:
@@ -189,9 +193,16 @@ def check_the_version_agrees():
     if not found:
         fail(0, cmakelists, "PROJECT_VER is not set, so nothing pins the "
                             "version the device reports.")
-        return
-    version = found.group(1)
+        return None
+    return found.group(1)
 
+
+def check_the_version_agrees(version):
+    """The version a reader is told must be the one the device reports.
+
+    A copy that disagrees sends someone looking for a difference between their
+    device and the documentation that is not there.
+    """
     # Each copy, with the pattern that should carry the version.
     copies = [
         ("README.md", r'^>\s*\*\*Status:\*\*\s*(\S+)', "the status line"),
@@ -215,6 +226,24 @@ def check_the_version_agrees():
                               % (what, other, version))
 
 
+def check_the_tag_agrees(tag, version):
+    """A release tag is a copy of the version, and the one people start from.
+
+    This repository distributes source rather than firmware images, so the tag
+    is what someone checks out to get a version. A tag naming a version the
+    tree does not report is worse than a stale document, because it reaches
+    people who never open one: they check out v0.1.1, build it, and the device
+    says 0.1.0.
+    """
+    expected = "v" + version
+    if tag != expected:
+        fail(0, os.path.join(ROOT, "CMakeLists.txt"),
+             "the tag is %s; PROJECT_VER is %s, so the tag at this commit "
+             "should be %s. Either the tag was cut at the wrong commit, or "
+             "PROJECT_VER was not raised before cutting it."
+             % (tag, version, expected))
+
+
 def check_the_mechanism_is_still_there():
     """Invariant 1 holds because the host build cannot see anything else."""
     path = os.path.join(ROOT, "platformio.ini")
@@ -229,13 +258,33 @@ def check_the_mechanism_is_still_there():
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Check the invariants that are cheap to check.")
+    parser.add_argument(
+        "--tag", metavar="NAME",
+        help="a release tag to check against PROJECT_VER, such as v0.1.0. CI "
+             "passes this on a tag push; there is nothing to check locally, "
+             "because the tag does not exist until it is pushed.")
+    arguments = parser.parse_args()
+
     check_no_esp_idf_in_core()
     check_dependencies_point_downward()
     check_the_mechanism_is_still_there()
-    check_the_version_agrees()
+
+    # Read the authority once, so a missing PROJECT_VER is reported once
+    # rather than once per copy that cannot be compared against it.
+    version = project_ver()
+    if version is not None:
+        check_the_version_agrees(version)
+        if arguments.tag is not None:
+            check_the_tag_agrees(arguments.tag, version)
 
     if not failures:
-        print("invariants 1 and 2 hold, and the version agrees everywhere")
+        if arguments.tag is None:
+            print("invariants 1 and 2 hold, and the version agrees everywhere")
+        else:
+            print("invariants 1 and 2 hold, and the version agrees everywhere, "
+                  "including the tag %s" % arguments.tag)
         return 0
 
     print("PROBLEMS: %d\n" % len(failures))

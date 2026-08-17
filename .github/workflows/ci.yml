@@ -3,6 +3,10 @@ name: ci
 on:
   push:
     branches: [main]
+    # A release tag gets the whole run, not just the version check below. The
+    # tag is what someone checks out to get that version, so "this tree builds"
+    # is worth re-establishing at the commit the tag actually points at.
+    tags: ["v*"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -29,7 +33,20 @@ jobs:
           python-version: "3.12"
 
       - name: Check invariants 1 and 2
+        if: github.ref_type != 'tag'
         run: python tools/check-invariants.py
+
+      # On a tag, the tag itself is one more copy of the version, and the one
+      # people start from. Checking it here fails the release rather than
+      # publishing a v0.1.1 whose device.describe answers 0.1.0.
+      #
+      # The tag name goes through env rather than into the run line, so a tag
+      # is data and never becomes shell.
+      - name: Check invariants 1 and 2, and that the tag agrees
+        if: github.ref_type == 'tag'
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: python tools/check-invariants.py --tag "$TAG_NAME"
 
   host-test:
     name: host tests
