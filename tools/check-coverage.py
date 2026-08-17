@@ -10,10 +10,11 @@ Why it runs the suites one at a time:
 
 PlatformIO builds each test directory into its own program in one shared build
 directory, rebuilding as it goes, so each suite's .gcda files replace the
-previous suite's. Running the whole lane and then reading the result reports
-only the last suite -- measured, that was 2 of 903 branches. So each suite is
-run on its own and its coverage is written out as a gcovr tracefile before the
-next one overwrites the data, and the tracefiles are merged at the end.
+previous suite's. Reading the result after a whole-lane run therefore reports
+the last suite alone, which looks like near-zero coverage and is really a
+measurement artefact. Each suite is instead run on its own and its coverage
+written out as a gcovr tracefile before the next one overwrites the data, and
+the tracefiles are merged at the end.
 
 The floors below are a ratchet, not a target. They exist so that coverage
 cannot quietly fall; raise them when the real number rises well past them.
