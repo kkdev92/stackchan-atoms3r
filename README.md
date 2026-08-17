@@ -381,15 +381,13 @@ on Linux or `.\tools\run-qemu.ps1 -Install` on Windows.
 
 ## Changelog
 
-Notable changes are in [CHANGELOG.md](CHANGELOG.md), and the history of
-individual changes is the pull requests.
+Notable changes are in [CHANGELOG.md](CHANGELOG.md); individual changes are in the
+pull requests.
 
-There are no release tags. Nothing is distributed from here, so a tag would name
-no artifact — and to identify what is actually running, ask the device instead of
-consulting a tag: `device.describe` returns the firmware version and the ELF
-SHA-256 of the build it booted. Builds are reproducible, with no timestamp
-embedded, so that SHA is stable for the same source and different for source that
-was modified locally. A tag could not tell you the second part.
+To find out what a device is running, ask it. `device.describe` reports the
+firmware version and the ELF SHA-256 of the image it booted. Builds embed no
+timestamp, so that hash identifies the source the image was built from — a local
+modification changes it.
 
 ---
 

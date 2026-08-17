@@ -2,10 +2,9 @@
 
 ## Supported versions
 
-Only `main` is supported, and there is nothing else that could be: no release is
-tagged and no binary is published, so a fix means rebuilding from a later commit.
-Older commits and locally built images are not maintained as separate supported
-versions.
+Only `main` is supported. Fixes land there, and picking one up means rebuilding
+from a later commit, since no firmware image is published to update. Older commits
+and locally built images are not maintained as separate supported versions.
 
 ## Reporting a vulnerability
 

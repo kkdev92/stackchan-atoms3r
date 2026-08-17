@@ -5,13 +5,10 @@ Notable user-visible changes, in the spirit of
 before 1.0.0, and a breaking change will be called out here. The version below is
 the one the firmware reports.
 
-**There are no release tags, and no binary is published.** A firmware image would
-combine this project's code with third-party components and carry its own
-verification and attribution obligations, so it is built from source instead —
-which leaves a tag with no artifact to name. The history of individual changes is
-the pull requests, and a device identifies its own build: `device.describe`
-returns the version and the ELF SHA-256 it booted, which is stable for the same
-source because the build embeds no timestamp.
+This repository distributes source rather than firmware images: an image combines
+this project's code with third-party components and carries its own verification
+and attribution obligations. Build it from a checkout, and ask a running device
+for its version and build hash with `device.describe`.
 
 ## 0.1.0
 

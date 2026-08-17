@@ -273,17 +273,15 @@ std::string document_with_nesting(int levels) {
 
 // The scanner is recursive, so its stack cost is set by how deeply nested the
 // input is -- and the input arrives from the network. The depth limit is what
-// keeps that cost bounded, and this is the test that the suppression of
-// misc-no-recursion in json_scan.cpp names, so that the suppression points at
-// something specific rather than at a suite.
+// bounds that cost, and this test holds the limit from both sides: the deepest
+// nesting it accepts, and the first depth it refuses. Moving the limit either way
+// fails one of them.
 //
-// Both sides of the boundary were already covered incidentally by
-// test_checked_object_member_validates_the_complete_document -- a 17-deep array
-// is rejected there, and a 16-deep document validates. Checked by moving the
-// limit: tightening it to 15 fails that test, and removing it fails it too. So
-// what this adds is narrower than it looks: the boundary as its own subject, the
-// object path rather than the array path at the first rejected depth, and a
-// depth far past the limit.
+// Both directions matter. A guard that refuses everything satisfies a test that
+// only checks deep input is refused, and a guard that refuses nothing satisfies
+// one that only checks shallow input is accepted.
+//
+// The suppression of misc-no-recursion in json_scan.cpp points here.
 void test_nesting_is_bounded_and_the_boundary_is_where_it_should_be() {
   std::string_view out;
 
