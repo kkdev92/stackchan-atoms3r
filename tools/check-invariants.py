@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Check the two invariants a machine can check.
+"""The checks that cost a second and would otherwise cost several minutes.
+
+Two invariants, and one fact that has to agree in more than one file.
 
 Seven invariants hold this design together (see
 docs/architecture/design-principles.md). Three of them are meant to be
@@ -18,9 +20,14 @@ script exists to fail them in a second, with a sentence saying which
 invariant was broken and why it matters, instead of several minutes later
 inside a compiler error that does not mention the design at all.
 
+The version is different in kind. Nothing breaks when a document states a
+version the firmware does not report -- it just sends someone hunting for a
+difference between their device and the documentation that is not there. So it
+is checked here, against PROJECT_VER, which is the copy device.describe reads.
+
 Run it directly, or as part of tools/check.ps1 or CI.
 
-Exit code 0 if both hold, 1 otherwise.
+Exit code 0 if everything holds, 1 otherwise.
 """
 
 import os
@@ -167,6 +174,47 @@ def check_dependencies_point_downward():
                  "allowed to require" % name)
 
 
+def check_the_version_agrees():
+    """The version a reader is told must be the one the device reports.
+
+    PROJECT_VER is the only authority: ESP-IDF puts it in the application
+    descriptor, and device.describe reads it back from there. Everywhere else
+    the version appears, it is a copy, and a copy that disagrees sends someone
+    looking for a difference between their device and the documentation that is
+    not there.
+    """
+    cmakelists = os.path.join(ROOT, "CMakeLists.txt")
+    with open(cmakelists, encoding="utf-8") as handle:
+        found = re.search(r'set\(PROJECT_VER\s+"([^"]+)"\)', handle.read())
+    if not found:
+        fail(0, cmakelists, "PROJECT_VER is not set, so nothing pins the "
+                            "version the device reports.")
+        return
+    version = found.group(1)
+
+    # Each copy, with the pattern that should carry the version.
+    copies = [
+        ("README.md", r'^>\s*\*\*Status:\*\*\s*(\S+)', "the status line"),
+        ("CHANGELOG.md", r'^##\s*\[?(\d+\.\d+\.\d+)\]?', "the newest heading"),
+        ("docs/api/device-interface.md", r'"version":\s*"([^"]+)"',
+         "the device.describe example"),
+    ]
+    for relative, pattern, what in copies:
+        path = os.path.join(ROOT, relative)
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+        seen = re.findall(pattern, text, re.M)
+        if not seen:
+            fail(0, path, "%s does not state a version, so it cannot be checked "
+                          "against PROJECT_VER (%s)." % (what, version))
+            continue
+        for other in sorted(set(seen)):
+            if other != version:
+                fail(0, path, "%s says %s; PROJECT_VER is %s, and PROJECT_VER is "
+                              "what device.describe reports."
+                              % (what, other, version))
+
+
 def check_the_mechanism_is_still_there():
     """Invariant 1 holds because the host build cannot see anything else."""
     path = os.path.join(ROOT, "platformio.ini")
@@ -184,16 +232,20 @@ def main():
     check_no_esp_idf_in_core()
     check_dependencies_point_downward()
     check_the_mechanism_is_still_there()
+    check_the_version_agrees()
 
     if not failures:
-        print("invariants 1 and 2 hold")
+        print("invariants 1 and 2 hold, and the version agrees everywhere")
         return 0
 
-    print("INVARIANT VIOLATIONS: %d\n" % len(failures))
+    print("PROBLEMS: %d\n" % len(failures))
     for invariant, path, message in failures:
-        print("  invariant %d  %s" % (invariant, path))
-        print("               %s\n" % message)
-    print("See docs/architecture/design-principles.md for what each one is for.")
+        label = "invariant %d" % invariant if invariant else "version    "
+        print("  %s  %s" % (label, path))
+        print("  %s  %s\n" % (" " * len(label), message))
+    if any(invariant for invariant, _, _ in failures):
+        print("See docs/architecture/design-principles.md for what each "
+              "invariant is for.")
     return 1
 
 

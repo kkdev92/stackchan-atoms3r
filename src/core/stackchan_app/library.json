@@ -1,6 +1,5 @@
 {
   "name": "stackchan_app",
-  "version": "0.1.0",
   "description": "Use cases. Depends on ports and domain, never on drivers.",
   "dependencies": {
     "stackchan_domain": "*",

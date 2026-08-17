@@ -1,6 +1,5 @@
 {
   "name": "stackchan_ports",
-  "version": "0.1.0",
   "description": "Abstract boundaries to the outside world. Headers only.",
   "dependencies": {
     "stackchan_domain": "*",
