@@ -20,6 +20,7 @@ concurrency:
 
 env:
   PLATFORMIO_VERSION: "6.1.19"
+  GCOVR_VERSION: "8.6"
 
 jobs:
   invariants:
@@ -72,6 +73,59 @@ jobs:
       # Host tests build only src/core (invariant 1).
       - name: Run the host tests
         run: pio test -e native
+
+  # Static analysis reads this code; these two run it. Both are host lanes, so
+  # they cover src/core only -- which is the whole decision layer, by design.
+  sanitizers:
+    name: sanitizers (host)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Cache PlatformIO (host)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.platformio
+          key: pio-host-${{ runner.os }}-${{ env.PLATFORMIO_VERSION }}-${{ hashFiles('platformio.ini') }}
+
+      - name: Install PlatformIO Core
+        run: pip install "platformio==${PLATFORMIO_VERSION}"
+
+      # -fno-sanitize-recover is set in platformio.ini, so a finding aborts the
+      # run and fails the lane rather than printing and carrying on.
+      - name: Run the host tests under ASan and UBSan
+        run: pio test -e native-sanitize
+
+  coverage:
+    name: coverage (host)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Cache PlatformIO (host)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.platformio
+          key: pio-host-${{ runner.os }}-${{ env.PLATFORMIO_VERSION }}-${{ hashFiles('platformio.ini') }}
+
+      - name: Install PlatformIO Core and gcovr
+        run: pip install "platformio==${PLATFORMIO_VERSION}" "gcovr==${GCOVR_VERSION}"
+
+      # pipefail because a pipe otherwise reports tee's exit code, which is
+      # always 0, and the floor check would pass while failing.
+      - name: Measure how much of src/core the tests reach
+        shell: bash
+        run: |
+          set -o pipefail
+          python tools/check-coverage.py | tee -a "$GITHUB_STEP_SUMMARY"
 
   static-analysis:
     name: static analysis
@@ -139,9 +193,13 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install "platformio==${PLATFORMIO_VERSION}"
 
+      # pipefail so a failed build fails here, with the compiler's message,
+      # rather than further down where the footprint step finds no RAM line.
       - name: Build
         shell: bash
-        run: pio run -e "${{ matrix.environment }}" 2>&1 | tee build.log
+        run: |
+          set -o pipefail
+          pio run -e "${{ matrix.environment }}" 2>&1 | tee build.log
 
       # Additional warnings are scoped to this repository's source.
       - name: No warnings from our own sources
