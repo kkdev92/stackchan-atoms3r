@@ -1,0 +1,36 @@
+# Whole categories of cppcheck findings that are switched off, and why.
+
+# A note on the format: a line holding nothing but "#" stops cppcheck 2.11
+# with "Failed to add suppression. No id." Separate paragraphs with a blank
+# line, and give every comment line something after the "#".
+
+# Nothing is listed here to make a number look better. Each entry is a check
+# that cannot say anything true about this project, either because of what
+# cppcheck is shown or because the advice does not apply here. Anything that
+# is merely inconvenient stays on.
+
+# Findings that are wrong in one particular place, rather than everywhere,
+# are suppressed at that place with a "// cppcheck-suppress <id>" comment, so
+# the reason sits next to the code it excuses.
+
+# cppcheck is pointed at src/core alone, because that is the layer with no
+# ESP-IDF in it. Every caller lives in src/platform or src/test, neither of
+# which cppcheck is shown, so it concludes that almost the whole layer is
+# unused and says so 76 times. Widening the scope is not the answer either:
+# src/platform does not compile without ESP-IDF's headers. Code that really
+# has no callers is caught by the linker instead.
+unusedFunction
+
+# Fires on the lookup tables in protocol.cpp, which walk a handful of entries
+# and return the one that matches. std::find_if needs a lambda, an iterator
+# and a comparison against end() to say the same thing in more lines. The
+# advice is sound for loops that reimplement an algorithm; these are short
+# enough that the loop is the clearer of the two.
+useStlAlgorithm
+
+# Fires where a local shares a name with a member function, such as a local
+# "outcome" beside an accessor "outcome()". Hiding a function behind an
+# object of an unrelated type is not a trap: any attempt to call it stops at
+# the compiler, because the local is not callable. Renaming the locals would
+# cost more in clarity than it would buy.
+shadowFunction

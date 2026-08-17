@@ -1,0 +1,21 @@
+# The configuration for a first flash, and for checking a board is sound.
+#
+# The one-way security features, Secure Boot and flash encryption, are left
+# off deliberately. They are written into eFuses, which cannot be undone, and
+# some settings disable JTAG permanently. Neither is worth doing to a board
+# you are still bringing up, and turning them on later is always possible
+# while turning them off is not.
+#
+# Logging stops at INFO. The whole point of this configuration is that a
+# person reads the startup log and decides whether it looks right, and at
+# DEBUG the SPI driver prints two lines per transaction — measured on real
+# hardware, two thirds of the output became "locked the bus / release bus"
+# and the startup sequence could not be followed at all.
+#
+# Later fragments win in SDKCONFIG_DEFAULTS, so this puts the level back to
+# INFO after sdkconfig.debug has raised it.
+#
+# To dig into something, use the atoms3r-debug environment, which keeps
+# DEBUG. To raise one component only, call esp_log_level_set at runtime
+# rather than rebuilding.
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y

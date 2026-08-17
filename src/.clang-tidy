@@ -1,0 +1,66 @@
+# The set of checks clang-tidy runs.
+#
+# Checks are named explicitly so diagnostics stay limited to rules relevant to
+# this project.
+#
+# tools/run-clang-tidy.py points at this file. It is the only thing that runs
+# clang-tidy here; `pio check` covers cppcheck alone, for reasons that script
+# explains.
+#
+# The selected groups focus on correctness, portability, and maintainability.
+Checks: >
+  -*,
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -misc-include-cleaner,
+  -cppcoreguidelines-pro-bounds-*,
+  -portability-avoid-pragma-once,
+  -misc-non-private-member-variables-in-classes,
+  -bugprone-easily-swappable-parameters
+
+# Why each of the above is off.
+#
+# cppcoreguidelines-pro-bounds-*
+#   The bounds-safety profile of the C++ Core Guidelines. Satisfying it takes
+#   gsl::span and gsl::at. GSL is not part of ESP-IDF and is not being added.
+#   Fixed-size buffer indexing triggers these checks throughout the core.
+#   Bounds are covered instead by focused overrun tests
+#   (test_overflow_never_writes_past_the_buffer, in test_native_json_writer).
+#
+#   The whole family is named rather than its members. Two were listed
+#   individually until clang-tidy 20 added a third,
+#   pro-bounds-avoid-unchecked-container-access, which reported 112 findings for
+#   the same reason the other two were already off -- so the list said nothing
+#   about the position and only recorded which checks existed when it was
+#   written.
+#
+# portability-avoid-pragma-once
+#   Added in a later clang-tidy than the one CI pins. Every header here uses
+#   `#pragma once`, which GCC, Clang and MSVC all support and the ESP-IDF
+#   toolchain uses throughout its own headers. The check exists for toolchains
+#   that do not, and this project does not build on one. Converting 66 headers
+#   to include guards would be a large mechanical diff bought with nothing.
+#
+# misc-non-private-member-variables-in-classes
+#   CommandSpec and ParamSpec are intentional public data holders without
+#   class invariants.
+#
+# bugprone-easily-swappable-parameters
+#   Some APIs intentionally accept adjacent values of one type, such as
+#   member(key, value).
+
+WarningsAsErrors: ''
+HeaderFilterRegex: 'stackchan/.*'
+FormatStyle: file
