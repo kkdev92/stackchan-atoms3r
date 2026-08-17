@@ -18,7 +18,7 @@ namespace stackchan::app {
 inline constexpr std::size_t kMaxConversationStartTextBytes = 480;
 
 struct ConversationStartInput {
-  std::string_view text{};
+  std::string_view text;
 
   [[nodiscard]] bool listens() const noexcept { return text.empty(); }
 };

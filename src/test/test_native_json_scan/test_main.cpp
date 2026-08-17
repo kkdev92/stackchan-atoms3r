@@ -256,6 +256,56 @@ void test_unescape_rejects_insufficient_capacity() {
   TEST_ASSERT_EQUAL_UINT32(SIZE_MAX, json_unescape("12345", out.data(), out.size()));
 }
 
+// A document whose "a" member is `levels` objects deep, with an integer at the
+// bottom so every level is itself well formed.
+std::string nested_document(int levels) {
+  std::string s = R"({"a":)";
+  for (int i = 0; i < levels; ++i) {
+    s += R"({"b":)";
+  }
+  s += "1";
+  for (int i = 0; i < levels; ++i) {
+    s += "}";
+  }
+  s += "}";
+  return s;
+}
+
+// The scanner is recursive, so its stack cost is set by how deeply nested the
+// input is -- and the input arrives from the network. The depth limit is what
+// keeps that cost bounded, and this is the test the suppression of
+// misc-no-recursion in json_scan.cpp points at: if the limit stops working, this
+// fails here rather than the device overflowing its stack in the field.
+//
+// The rejection side was already covered, by the 17-deep array in
+// test_checked_object_member_validates_the_complete_document. What is here is
+// the *accepted* side, which is the half that catches the limit being tightened
+// by accident: a guard that refuses everything also passes a test that only
+// checks that deep input is refused.
+void test_nesting_is_bounded_and_the_boundary_is_where_it_should_be() {
+  std::string_view out;
+
+  const std::string at_the_limit = nested_document(16);
+  TEST_ASSERT_EQUAL_INT(
+      static_cast<int>(JsonMemberResult::found),
+      static_cast<int>(json_find_object_checked(at_the_limit, "a", out)));
+
+  // One past, through the object path rather than the array path.
+  const std::string one_past = nested_document(17);
+  TEST_ASSERT_EQUAL_INT(
+      static_cast<int>(JsonMemberResult::invalid),
+      static_cast<int>(json_find_object_checked(one_past, "a", out)));
+
+  // Far past it, so the refusal is not something that only holds for exactly
+  // one level over. Rejection has to read as invalid: a caller told `missing`
+  // would treat a document it could not validate as one that merely lacked the
+  // member.
+  const std::string far_past = nested_document(400);
+  TEST_ASSERT_EQUAL_INT(
+      static_cast<int>(JsonMemberResult::invalid),
+      static_cast<int>(json_find_object_checked(far_past, "a", out)));
+}
+
 }  // namespace
 
 void setUp() {}
@@ -275,6 +325,7 @@ int main() {
   RUN_TEST(test_type_mismatches_are_rejected);
   RUN_TEST(test_checked_object_member_distinguishes_missing_and_invalid);
   RUN_TEST(test_checked_object_member_validates_the_complete_document);
+  RUN_TEST(test_nesting_is_bounded_and_the_boundary_is_where_it_should_be);
   RUN_TEST(test_malformed_input_fails_without_crashing);
   RUN_TEST(test_unescape_passes_utf8_through);
   RUN_TEST(test_unescape_handles_the_contract_escapes);

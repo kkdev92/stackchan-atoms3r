@@ -134,7 +134,7 @@ constexpr std::size_t kMaxCheckedJsonDepth = 16;
   }
   const std::size_t start = ++i;
   while (i < s.size()) {
-    const unsigned char c = static_cast<unsigned char>(s[i]);
+    const auto c = static_cast<unsigned char>(s[i]);
     if (c < 0x20) {
       return false;
     }
@@ -169,6 +169,13 @@ constexpr std::size_t kMaxCheckedJsonDepth = 16;
   return false;
 }
 
+// The branching here is JSON's number grammar transcribed: an optional sign, an
+// integer part that may not have a leading zero, an optional fraction and an
+// optional exponent, each with its own "at least one digit" rule. Splitting it
+// into a helper per clause would lower the measured complexity without lowering
+// the real complexity, and would move the rules away from each other -- which
+// is what makes a grammar hard to check against a specification.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 [[nodiscard]] bool skip_checked_number(std::string_view s, std::size_t& i,
                                        std::string_view& out_span) noexcept {
   const std::size_t start = i;
@@ -216,6 +223,17 @@ constexpr std::size_t kMaxCheckedJsonDepth = 16;
   return true;
 }
 
+// The four functions below form one recursive-descent group, because JSON's
+// grammar is recursive: a value may be an object, whose members are values.
+//
+// misc-no-recursion is suppressed at each of them rather than switched off for
+// the project, because recursion on a device with a small stack is worth being
+// told about everywhere else. What makes it safe *here* is the bound: every
+// descent goes through skip_checked_value, which refuses at
+// kMaxCheckedJsonDepth, so the stack cost has a ceiling that does not depend on
+// the input. test_native_json_scan exercises that ceiling from both sides -- the
+// deepest accepted nesting and the first rejected one -- so the claim in this
+// comment fails a test if it stops being true.
 [[nodiscard]] bool skip_checked_value(std::string_view s, std::size_t& i,
                                       std::string_view& out_span,
                                       ValueKind& out_kind,
@@ -226,6 +244,7 @@ constexpr std::size_t kMaxCheckedJsonDepth = 16;
     std::string_view object, std::size_t object_start, std::size_t before,
     std::string_view key, std::size_t depth) noexcept;
 
+// NOLINTNEXTLINE(misc-no-recursion) -- bounded; see the note above
 [[nodiscard]] bool skip_checked_object(std::string_view s, std::size_t& i,
                                        std::string_view& out_span,
                                        std::size_t depth,
@@ -282,6 +301,7 @@ constexpr std::size_t kMaxCheckedJsonDepth = 16;
   return false;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion) -- bounded; see the note above
 [[nodiscard]] bool skip_checked_array(std::string_view s, std::size_t& i,
                                       std::string_view& out_span,
                                       std::size_t depth,
@@ -321,6 +341,7 @@ constexpr std::size_t kMaxCheckedJsonDepth = 16;
   return false;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion) -- bounded; see the note above
 [[nodiscard]] bool skip_checked_value(std::string_view s, std::size_t& i,
                                       std::string_view& out_span,
                                       ValueKind& out_kind,
@@ -358,6 +379,7 @@ constexpr std::size_t kMaxCheckedJsonDepth = 16;
 // Re-walk the already validated prefix instead of imposing an arbitrary
 // member-count limit or allocating storage. Request bodies are bounded, so
 // the quadratic worst case remains small and duplicate names fail closed.
+// NOLINTNEXTLINE(misc-no-recursion) -- bounded; see the note above
 [[nodiscard]] bool checked_key_appeared_before(std::string_view object,
                                                std::size_t object_start,
                                                std::size_t before,
@@ -506,6 +528,11 @@ bool json_find_object(std::string_view object, std::string_view key,
   return true;
 }
 
+// Same reasoning as skip_checked_number: this walks an object's members and has
+// to distinguish "absent", "present but not an object" and "malformed" at every
+// step, because a caller that cannot tell those apart cannot fail closed. The
+// branches are the specification, and test_native_json_scan covers them.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 JsonMemberResult json_find_object_checked(std::string_view object,
                                           std::string_view key,
                                           std::string_view& out_object) noexcept {
@@ -615,7 +642,7 @@ bool json_find_integer(std::string_view object, std::string_view key,
     if (c < '0' || c > '9') {
       return false;
     }
-    value = value * 10 + (c - '0');
+    value = (value * 10) + (c - '0');
   }
   out = negative ? -value : value;
   return true;

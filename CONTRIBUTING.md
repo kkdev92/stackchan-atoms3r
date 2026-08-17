@@ -127,6 +127,20 @@ A suppression should be narrow and include a short reason. Do not reformat
 unrelated files as part of a functional change. The current tree is not
 enforced as globally clang-format-clean.
 
+**clang-tidy's check set depends on its version.** `src/.clang-tidy` selects
+whole groups (`bugprone-*`, `cppcoreguidelines-*`, and so on), so a clang-tidy
+newer than the one CI installs will run checks CI does not. One of those
+reported 112 findings for a position the config had already taken twice under
+two older names. Both are named in that file now, and the tree is clean under
+LLVM 22 as well as under the version CI uses. If a newer release surfaces
+something else, the choice is to fix it or to add it to that file **with the
+reason** — not to pin your clang-tidy to an older one.
+
+If `clang-tidy` is missing, `tools/check.ps1` reports it as *skipped* rather
+than passed. That is deliberate, and it means a green local gate on a machine
+without it has not checked this at all. The CI lane installs its own, which is
+what makes it the backstop.
+
 ## Documentation
 
 Document current behavior rather than planned behavior. Keep design proposals
