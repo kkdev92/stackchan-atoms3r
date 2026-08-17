@@ -1,0 +1,184 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PLATFORMIO_VERSION: "6.1.19"
+
+jobs:
+  invariants:
+    name: invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Check invariants 1 and 2
+        run: python tools/check-invariants.py
+
+  host-test:
+    name: host tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      # Host and firmware jobs use separate exact cache keys because their
+      # package sets differ. Do not restore a cache from another pin set.
+      - name: Cache PlatformIO (host)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.platformio
+          key: pio-host-${{ runner.os }}-${{ env.PLATFORMIO_VERSION }}-${{ hashFiles('platformio.ini') }}
+
+      - name: Install PlatformIO Core
+        run: pip install "platformio==${PLATFORMIO_VERSION}"
+
+      # Host tests build only src/core (invariant 1).
+      - name: Run the host tests
+        run: pio test -e native
+
+  static-analysis:
+    name: static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Cache PlatformIO (host)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.platformio
+          key: pio-host-${{ runner.os }}-${{ env.PLATFORMIO_VERSION }}-${{ hashFiles('platformio.ini') }}
+
+      - name: Install PlatformIO Core
+        run: pip install "platformio==${PLATFORMIO_VERSION}"
+
+      - name: Install clang-tidy
+        run: sudo apt-get install -y -qq clang-tidy-18
+
+      - name: Run cppcheck
+        run: pio check -e native --fail-on-defect=medium --fail-on-defect=high
+
+      - name: Run clang-tidy
+        env:
+          CLANG_TIDY: clang-tidy-18
+        run: python tools/run-clang-tidy.py
+
+  # atoms3r-qemu is built and run by the boot job below.
+  build:
+    name: build (${{ matrix.environment }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [atoms3r-safe, atoms3r-debug, atoms3r-release]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      # Key the firmware cache on dependency inputs rather than comments.
+      - name: Work out the toolchain cache key
+        id: toolchain
+        shell: bash
+        run: |
+          {
+            grep -E '^[[:space:]]*(platform|platform_packages|board|framework)[[:space:]]*=' platformio.ini
+            cat dependencies.lock
+            cat src/platform/*/idf_component.yml
+          } > "${RUNNER_TEMP}/pins"
+          echo "key=$(sha256sum "${RUNNER_TEMP}/pins" | cut -c1-32)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache PlatformIO (firmware)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.platformio
+          key: pio-firmware-${{ runner.os }}-${{ env.PLATFORMIO_VERSION }}-${{ steps.toolchain.outputs.key }}
+
+      - name: Install PlatformIO Core
+        run: pip install "platformio==${PLATFORMIO_VERSION}"
+
+      - name: Build
+        shell: bash
+        run: pio run -e "${{ matrix.environment }}" 2>&1 | tee build.log
+
+      # Additional warnings are scoped to this repository's source.
+      - name: No warnings from our own sources
+        shell: bash
+        run: |
+          if grep -nE '(^|/)src/(core|main|platform)/.*: warning:' build.log; then
+            echo "::error::the build warned about this project's own code"
+            exit 1
+          fi
+          echo "no warnings from src/"
+
+      - name: Report the footprint
+        shell: bash
+        run: |
+          grep -E '^(RAM|Flash):' build.log | tee -a "$GITHUB_STEP_SUMMARY"
+
+  boot:
+    name: boot (emulator)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Work out the toolchain cache key
+        id: toolchain
+        shell: bash
+        run: |
+          {
+            grep -E '^[[:space:]]*(platform|platform_packages|board|framework)[[:space:]]*=' platformio.ini
+            cat dependencies.lock
+            cat src/platform/*/idf_component.yml
+          } > "${RUNNER_TEMP}/pins"
+          echo "key=$(sha256sum "${RUNNER_TEMP}/pins" | cut -c1-32)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache PlatformIO (firmware)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.platformio
+          key: pio-firmware-${{ runner.os }}-${{ env.PLATFORMIO_VERSION }}-${{ steps.toolchain.outputs.key }}
+
+      - name: Cache QEMU
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/qemu-esp
+          key: qemu-${{ runner.os }}-${{ hashFiles('tools/run-qemu.sh') }}
+
+      - name: Install PlatformIO Core
+        run: pip install "platformio==${PLATFORMIO_VERSION}"
+
+      - name: Install QEMU
+        run: bash tools/run-qemu.sh --install-only
+
+      - name: Build, boot and check the startup log
+        run: bash tools/run-qemu.sh --check --seconds 40

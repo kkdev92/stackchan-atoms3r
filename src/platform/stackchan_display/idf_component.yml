@@ -1,0 +1,7 @@
+# Dependencies fetched by the ESP-IDF component manager.
+#
+# M5GFX handles panel detection and controller-specific geometry for the
+# GC9107 and ST7735 variants. See docs/hardware/pins-and-peripherals.md.
+# Verify the display on physical hardware after updating the pinned version.
+dependencies:
+  m5stack/m5gfx: "==0.2.26"

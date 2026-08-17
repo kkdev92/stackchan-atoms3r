@@ -1,0 +1,122 @@
+stackchan-atoms3r
+Copyright (c) 2026 kkdev92
+Licensed under the MIT License. See LICENSE.
+
+This file records third-party notices for the source and the firmware
+configuration in this repository. A distributor is responsible for checking
+the actual contents of each release artifact and providing the applicable
+license texts.
+
+Project-maintained license copies in this repository:
+
+  licenses/Apache-2.0.txt
+  licenses/MIT-M5GFX.txt
+  licenses/MIT-result.txt
+  licenses/BSD-LovyanGFX.txt
+  licenses/MIT-M5Stack-Avatar.txt
+  licenses/MIT-M5Unified.txt
+
+Managed components can also contain notices for optional source files, fonts,
+and other bundled material. Preserve the applicable notices supplied with
+those components; do not treat the list above as an inventory of every file in
+their source packages.
+
+
+Components linked into the firmware
+===================================
+
+ESP-IDF
+  Copyright (c) Espressif Systems (Shanghai) CO LTD
+  Apache License 2.0
+  https://github.com/espressif/esp-idf
+
+  The pinned firmware framework is ESP-IDF 6.0.1. Preserve the applicable
+  framework and binary-component notices when distributing firmware.
+
+M5GFX
+  Copyright (c) 2021 M5Stack
+  MIT License
+  https://github.com/m5stack/M5GFX
+
+  Version 0.2.26 is fetched as a managed component and used by
+  src/platform/stackchan_display. Its source package includes additional
+  third-party material. Check the release link map and preserve the notices
+  for material included in the artifact being distributed.
+
+LovyanGFX and bundled notices
+  Copyright (c) 2020 lovyan03
+  Copyright (c) 2020 Bodmer
+  Copyright (c) 2012 Adafruit Industries
+  FreeBSD and BSD licenses
+  https://github.com/lovyan03/LovyanGFX
+
+  M5GFX contains LovyanGFX code and uses the Adafruit GLCD font in this
+  firmware configuration. The combined upstream license text is reproduced
+  in licenses/BSD-LovyanGFX.txt.
+
+result
+  Copyright (c) 2017-2021 Matthew Rodusek
+  MIT License
+  https://github.com/bitwizeshift/result
+
+  M5GFX uses this header-only result type. Its license is reproduced in
+  licenses/MIT-result.txt.
+
+
+Sources adapted in this implementation
+======================================
+
+M5Stack-Avatar
+  Copyright (c) 2018 Shinya Ishikawa
+  MIT License
+  https://github.com/stack-chan/m5stack-avatar
+
+  The face implementation adapts the default face geometry, expression
+  construction, and animation timing. See
+  src/platform/stackchan_display/include/stackchan/display/m5gfx_face.hpp.
+
+M5Unified
+  Copyright (c) 2021 M5Stack
+  MIT License
+  https://github.com/m5stack/M5Unified
+
+  Hardware configuration information used by the audio adapter includes
+  codec and I/O-expander register sequences, I2S configuration, and board
+  pin assignments.
+
+
+Project acknowledgement
+=======================
+
+Stack-chan
+  Developed and published by Shinya Ishikawa (meganetaaan)
+  with the Stack-chan community
+  Apache License 2.0
+  https://github.com/stack-chan/stack-chan
+
+  This repository is an independent Stack-chan firmware implementation.
+  The name is used to identify the project concept and compatible hardware.
+
+StackChan_Minimal
+  Copyright 2026 A-Uta Works
+  Apache License 2.0
+  https://github.com/A-Uta/StackChan_Minimal
+
+  This firmware was inspired by that earlier project for the same hardware.
+  No source files from that repository are included here, and it is not a
+  build dependency. This entry records the origin of the project.
+
+
+Redistribution notes
+====================
+
+The source in this repository is licensed under MIT, but a built firmware
+image also contains third-party code. When redistributing a firmware image:
+
+1. Include this NOTICE file.
+2. Include LICENSE and the applicable files from licenses/.
+3. Preserve applicable notices supplied inside managed component packages.
+4. Recheck the dependency lock file and linked image for the release commit.
+5. Preserve any additional notices required by newly linked components.
+
+This notice is a project-maintenance record and is not legal advice.

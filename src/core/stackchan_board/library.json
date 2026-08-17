@@ -1,0 +1,6 @@
+{
+  "name": "stackchan_board",
+  "version": "0.1.0",
+  "description": "AtomS3R pin facts as data. Touches no hardware.",
+  "build": { "flags": ["-std=gnu++17"] }
+}
