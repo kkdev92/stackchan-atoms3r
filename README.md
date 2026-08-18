@@ -15,6 +15,8 @@ The firmware sends audio only when a conversation is started and contains no
 telemetry service.
 *Built as a compact, inspectable base for one documented hardware setup.*
 
+Project page: <https://kkdev92.dev/>
+
 > **Status:** 0.1.0 (best-effort maintenance)
 
 ---
