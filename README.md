@@ -1,5 +1,6 @@
 # stackchan-atoms3r
 
+[![Release](https://img.shields.io/github/v/release/kkdev92/stackchan-atoms3r)](https://github.com/kkdev92/stackchan-atoms3r/releases)
 [![CI](https://github.com/kkdev92/stackchan-atoms3r/actions/workflows/ci.yml/badge.svg)](https://github.com/kkdev92/stackchan-atoms3r/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/kkdev92/stackchan-atoms3r/badge)](https://scorecard.dev/viewer/?uri=github.com/kkdev92/stackchan-atoms3r)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14114/badge)](https://www.bestpractices.dev/projects/14114)
@@ -17,7 +18,7 @@ telemetry service.
 
 Project page: <https://kkdev92.dev/>
 
-> **Status:** 0.1.0 (best-effort maintenance)
+> **Status:** Active (best-effort maintenance)
 
 ---
 
