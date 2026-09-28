@@ -350,10 +350,11 @@ a check as skipped rather than passed when its tool is missing. The same checks
 run in CI on every push and pull request to `main`.
 
 Because `src/core` contains no ESP-IDF, the entire decision layer runs on a PC,
-and its test coverage is measured rather than assumed: 93.2% of lines, 82.6% of
-branches, and 99.7% of functions. CI enforces a floor of 90% line and 80% branch
-coverage, and runs the same tests under AddressSanitizer and
-UndefinedBehaviorSanitizer on every pull request.
+and its test coverage is measured rather than assumed: `tools/check-coverage.py`
+measures it on every pull request, fails the build below 90% of lines or 80% of
+branches, and prints the current figures in the job summary. CI also runs the
+same tests under AddressSanitizer and UndefinedBehaviorSanitizer on every pull
+request.
 
 Before the first QEMU run, install it with `tools/run-qemu.sh --install-only`
 on Linux or `.\tools\run-qemu.ps1 -Install` on Windows.
