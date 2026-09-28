@@ -203,14 +203,17 @@ def check_the_version_agrees(version):
     A copy that disagrees sends someone looking for a difference between their
     device and the documentation that is not there.
     """
-    # Each copy, with the pattern that should carry the version.
+    # Each copy, with the pattern that should carry the version, and whether
+    # only the first match is a copy. The changelog keeps every earlier release
+    # below the newest one, and those headings are history, not copies: only the
+    # newest heading has to name the version being built.
     copies = [
-        ("README.md", r'^>\s*\*\*Status:\*\*\s*(\S+)', "the status line"),
-        ("CHANGELOG.md", r'^##\s*\[?(\d+\.\d+\.\d+)\]?', "the newest heading"),
+        ("README.md", r'^>\s*\*\*Status:\*\*\s*(\S+)', "the status line", False),
+        ("CHANGELOG.md", r'^##\s*\[?(\d+\.\d+\.\d+)\]?', "the newest heading", True),
         ("docs/api/device-interface.md", r'"version":\s*"([^"]+)"',
-         "the device.describe example"),
+         "the device.describe example", False),
     ]
-    for relative, pattern, what in copies:
+    for relative, pattern, what, first_only in copies:
         path = os.path.join(ROOT, relative)
         with open(path, encoding="utf-8") as handle:
             text = handle.read()
@@ -219,6 +222,8 @@ def check_the_version_agrees(version):
             fail(0, path, "%s does not state a version, so it cannot be checked "
                           "against PROJECT_VER (%s)." % (what, version))
             continue
+        if first_only:
+            seen = seen[:1]
         for other in sorted(set(seen)):
             if other != version:
                 fail(0, path, "%s says %s; PROJECT_VER is %s, and PROJECT_VER is "
